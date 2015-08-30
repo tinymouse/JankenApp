@@ -5,7 +5,7 @@
       "projectTypeName": "com.intel.xdk.projecttype.jsapp",
       "src": "https://appcenter.html5tools-software.intel.com/api/v2.0/redirect/projectrenderers/release-2015-ww32/jsapp/templates-blank-cordova-project/sample.zip",
       "projectGuid": "4a03b9d4-9ff4-440e-92cc-54615307f664",
-      "lastModifiedDate": 1440922958696,
+      "lastModifiedDate": 1440942186854,
       "creationDate": 1440328242065
     },
     "XDK-app-designer": "false",
@@ -52,6 +52,20 @@
         "paramvals": {},
         "dependsOn": [],
         "dependedBy": []
+      },
+      {
+        "id": "cordova-plugin-shake",
+        "version": "",
+        "selectedState": "Included",
+        "data": {},
+        "paramvals": {},
+        "dependsOn": [],
+        "dependedBy": [],
+        "custom": "true",
+        "name": "Shake",
+        "origin": "https://github.com/leecrossley/cordova-plugin-shake.git",
+        "originType": "repo",
+        "sourceLocation": ""
       }
     ],
     "buildConfigurations": {

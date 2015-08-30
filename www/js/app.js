@@ -16,6 +16,7 @@
 // This file contains your event handlers, the center of your application.
 // NOTE: see app.initEvents() in init-app.js for event handler initialization code.
 
+/*
 function myEventHandler() {
     "use strict" ;
 
@@ -34,32 +35,41 @@ function myEventHandler() {
 
     alert(str) ;
 }
+*/
 
 
 // ...additional event handlers here...
 
-function onDeviceReady() {
-    var oldz = 0;
-    var status = {
-        init: 0,
-        saisho: 1,
-        gu: 2,
-        janken: 3,
-        pon: 4,
-        aoko: 5,
-        sho: 6,
-		current: 0
-    };
+var kind = {
+	gu: 0,
+	choki: 1,
+	pa: 2
+};
 	
+function onDeviceReady() {
+
+	var oldz = 0;
+	var status = {
+		init: 0,
+		saisho: 1,
+		gu: 2,
+		janken: 3,
+		pon: 4,
+		aoko: 5,
+		sho: 6,
+		current: 0
+	};
+
 	$("#page_janken").click(function(){
-		$("#mess").text("はじめるよ！")
+		$("#mess").text("はじめるよ！");
+		$("#page_janken").css('background-image', 'url("images/Janken.png")');
 		status.current = status.init;
 	});
     
     var accel = navigator.accelerometer.watchAcceleration(function(acceleration) {
 		
         if ((acceleration.z > 0) != (oldz > 0)) {    // 端末を表から裏、裏から表に
-
+			
 			if (status.current == status.init && acceleration.z < 0) {
 				showSaisho();
 				saySaisho();
@@ -90,13 +100,9 @@ function onDeviceReady() {
 				saySho();
 				status.current = status.pon;
 			}
-			else {
-				status.current = status.init;
-            }
         }
         oldz = acceleration.z;
     },function(){
-	  
     },{
         frequency: 30, adjustForRotation: true
     });
@@ -107,17 +113,33 @@ function showSaisho(){
 	$("#mess").text("最初は・・");
 }
 
-function showGu(){
-	$("#mess").text("グー！");
-}
-
 function showJanken(){
 	$("#mess").text("じゃんけん・・");
 }
 
 function showPon() {
     var index = Math.floor(Math.random() * 3+1) - 1;
-    $("#mess").text("index:"+index.toString());
+	if (index == kind.gu) {
+		showGu();
+	}
+	else if (index == kind.choki) {
+		showChoki();
+	}
+	else if (index == kind.pa) {
+		showPa();
+	}
+}
+
+function showGu() {
+	$("#page_janken").css('background-image', 'url("images/gu.png")');
+}
+
+function showChoki() {
+	$("#page_janken").css('background-image', 'url("images/choki.png")');
+}
+
+function showPa() {
+	$("#page_janken").css('background-image', 'url("images/pa.png")');
 }
 
 function showAiko(){

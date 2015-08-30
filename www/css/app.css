@@ -49,6 +49,10 @@ body {
 
 // ...additional styles here...
 
+* {
+	margin: 0 auto;
+}
+
 html,
 body,
 .page {
@@ -58,4 +62,7 @@ body,
 
 .page {
     background-color: azure;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: contain;
 }
