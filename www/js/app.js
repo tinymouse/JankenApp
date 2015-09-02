@@ -48,7 +48,16 @@ var kind = {
 	
 function onDeviceReady() {
 
+	$("#page_janken").click(function(){
+		initStatus();
+	});
+    
+	var oldx = 0;
+	var oldy = 0;
 	var oldz = 0;
+	var oldt = 0;
+	var olds = 0;
+	
 	var status = {
 		init: 0,
 		saisho: 1,
@@ -57,57 +66,70 @@ function onDeviceReady() {
 		pon: 4,
 		aoko: 5,
 		sho: 6,
-		current: 0
 	};
-
-	$("#page_janken").click(function(){
-		$("#mess").text("はじめるよ！");
-		$("#page_janken").css('background-image', 'url("images/Janken.png")');
-		status.current = status.init;
-	});
-    
+	var current = status.init;
+		
     var accel = navigator.accelerometer.watchAcceleration(function(acceleration) {
 		
-        if ((acceleration.z > 0) != (oldz > 0)) {    // 端末を表から裏、裏から表に
+		var force = Math.abs(acceleration.x - oldx + acceleration.y - oldy);
+		if (force > 15.0) {
+			if (oldt > 0 && acceleration.timestamp - olds > 200) {
+				showStart();
+				current = status.init;
+				return;
+			}
+			olds = acceleration.timestamp;
+		}		
+		else if ((acceleration.z > 0) != (oldz > 0)) {    // 端末を表から裏、裏から表に
 			
-			if (status.current == status.init && acceleration.z < 0) {
+			console.log(current);
+
+			if (current == status.init && acceleration.z < 0) {
 				showSaisho();
 				saySaisho();
-				status.current = status.saisho;
+				current = status.saisho;
 			}
-			else if (status.current == status.saisho && acceleration.z > 0) {
+			else if (current == status.saisho && acceleration.z > 0) {
 				showGu();
 				sayGu();
-				status.current = status.gu;
+				current = status.gu;
 			}
-			else if (status.current == status.gu && acceleration.z < 0) {
+			else if (current == status.gu && acceleration.z < 0) {
 				showJanken();
 				sayJanken();
-				status.current = status.janken;
+				current = status.janken;
 			}
-			else if (status.current == status.janken && acceleration.z > 0) {
+			else if (current == status.janken && acceleration.z > 0) {
 				showPon();
 				sayPon();
-				status.current = status.pon;
+				current = status.pon;
 			}
-			else if (status.current == status.pon && acceleration.z < 0) {
+			else if (current == status.pon && acceleration.z < 0) {
 				showAiko();
 				sayAiko();
-				status.current = status.aiko;
+				current = status.aiko;
 			}
-			else if (status.current == status.aiko && acceleration.z > 0) {
+			else if (current == status.aiko && acceleration.z > 0) {
 				showPon();
 				saySho();
-				status.current = status.pon;
+				current = status.pon;
 			}
-        }
+		}
+		oldx = acceleration.x;
+		oldy = acceleration.y;
         oldz = acceleration.z;
+		oldt = acceleration.timestamp;
     },function(){
     },{
         frequency: 30, adjustForRotation: true
     });
 }
 document.addEventListener("deviceready", onDeviceReady, false);
+
+function showStart(){
+	$("#mess").text("はじめるよ！");
+	$("#page_janken").css('background-image', 'url("images/Janken.png")');
+}
 
 function showSaisho(){
 	$("#mess").text("最初は・・");
