@@ -48,7 +48,7 @@ var stage = {
 	pon: 4,
 	aiko: 5,
 	sho: 6,
-	kekka: 7
+	hantei: 7
 };
 
 var hand = {
@@ -65,10 +65,9 @@ var role = {
 var mode = {
 	single: 0,
 	group: 1,
-	party: 2
 };
 
-var kekka = {
+var hantei = {
 	kachi: 1,
 	make: 2,
 	aiko: 3,
@@ -81,9 +80,9 @@ var self = {
 };
 
 var master = {
+	exist: false,
 	stage: stage.hajime,
 	hand: undefined,
-	role: role.master,
 };
 
 var players = {
@@ -94,7 +93,7 @@ var players = {
 var game = {
 	mode: mode.single,
 	id: "2015090522000000",
-	kekka: undefined
+	hantei: undefined
 };
 
 var milkcocoa;
@@ -103,6 +102,7 @@ var datastore;
 function onDeviceReady() {
 
 	$("#page_janken").click(function(){
+		
 	});
 	
 	$("#button_single").click(function(){
@@ -113,11 +113,6 @@ function onDeviceReady() {
 	$("#button_group").click(function(){
 		game.mode = mode.group;
 		$("#mess").text("グループモードになりました");
-	});
-
-	$("#button_party").click(function(){
-		game.mode = mode.party;
-		$("#mess").text("パーティモードになりました");
 	});
 
 	$("#button_master").click(function(){
@@ -142,6 +137,7 @@ function onDeviceReady() {
 		if (force > 15.0) {
 			if (oldt > 0 && acceleration.timestamp - olds > 200) {    // 端末をシェイク
 				ShowHajime();
+				master.exist = false;
 				players.num = 0;
 				self.stage = stage.hajime;
 				return;
@@ -198,7 +194,6 @@ function onDeviceReady() {
     },function(){
 		
     },{
-		
         frequency: 30, adjustForRotation: true
     });
 
@@ -209,45 +204,57 @@ function onDeviceReady() {
 	datastore.on("send", function(data){
 		var text = data.value.text;
 		console.log("received: " + text);
-
+		
 		if (data.value.role == role.master) {
+			if (data.value.stage == stage.gu) {
+				master.exist = true;
+			}
 			master.stage = data.value.stage;
 			master.hand = data.value.hand;
 		}
-		else if (data.value.role == role.player &&
-			data.value.stage == stage.gu) {
-			players.num++;
-			console.log("players.num:" + players.num);
-		}
-		else if (data.value.role == role.player &&
-			data.value.stage == stage.pon) {
-			players.hands.push(data.value.hand);
-			console.log("data.hand:" + data.value.hand);
+		else if (data.value.role == role.player) {
+			if (data.value.stage == stage.gu) {
+				players.num++;
+				console.log("players.num:" + players.num);
+			}
+			else if (data.value.stage == stage.pon) {
+				players.hands.push(data.value.hand);
+				console.log("data.hand:" + data.value.hand);
+			}
 		}
 		
-		if (game.mode == mode.party) {
+		if (master.exist) {    // 親あり
 			if (self.role == role.player &&
 				self.stage == stage.pon &&
 				master.stage == stage.pon) {
 
 				judgeByMaster();
-				showKekka();
-				sayKekka();
-				if (game.kekka != kekka.aiko) {
-					self.stage = stage.kekka;
-				}
+				showHantei();
+				sayHantei();
+				self.stage = stage.hantei;
 			}
 		}
-		else if (game.mode == mode.group) {
+		else if (players.num > 2) {    // グループ
 			if (self.stage == stage.pon &&
 				data.value.stage == stage.pon &&
 				players.hands.length >= players.num) {
 				
 				judgeByPlayers();
-				showKekka();
-				sayKekka();
-				if (game.kekka != kekka.aiko) {
-					self.stage = stage.kekka;
+				showHantei();
+				sayHantei();
+				self.stage = stage.hantei;
+			}
+		}
+		else {    // 一対一
+			if (self.stage == stage.pon &&
+				data.value.stage == stage.pon &&
+				players.hands.length >= players.num) {
+
+				judgeByOpponent();
+				showHantei();
+				sayHantei();
+				if (game.hantei != hantei.aiko) {
+					self.stage = stage.hantei;
 				}
 			}
 		}
@@ -294,7 +301,7 @@ function showAiko(){
 }
 
 function getCurrentPath(){
-    var str = location.href;
+	var str = location.pathname;
     var i = str.lastIndexOf('/');
     return str.substring(0, i+1);
 }
@@ -343,67 +350,84 @@ function sendStatus(){
 }
 
 function judgeByMaster(){		
-	if (self.hand == hand.gu && master.hand == hand.choki) {
-		game.kekka = kekka.kachi;	
+	if (self.hand == master.hand) {
+		game.hantei = hantei.aiko;
 	}
-	else if (self.hand == hand.gu && master.hand == hand.pa) {
-		game.kekka = kekka.make;
-	}
-	else if (self.hand == hand.choki && master.hand == hand.gu) {
-		game.kekka = kekka.make;
+	else if (self.hand == hand.gu && master.hand == hand.choki) {
+		game.hantei = hantei.kachi;
 	}
 	else if (self.hand == hand.choki && master.hand == hand.pa) {
-		game.kekka = kekka.kachi;
+		game.hantei = hantei.kachi;
 	}
 	else if (self.hand == hand.pa && master.hand == hand.gu) {
-		game.kekka = kekka.kachi;
-	}
-	else if (self.hand == hand.pa && master.hand == hand.choki) {
-		game.kekka = kekka.make;
+		game.hantei = hantei.kachi;
 	}
 	else {
-		game.kekka = kekka.aiko;
+		game.hantei = hantei.make;
 	}
 }
 
 function judgeByPlayers(){
 	var arr = players.hands.concat();
 	arr.splice(arr.indexOf(self.hand), 1);
-	console.log("arr.length:" + arr.length);
-	
-	if (arr.indexOf(self.hand) >= 0) {
-		game.kekka = kekka.aiko;
+
+	if (self.hand == hand.gu && arr.indexOf(hand.choki) < 0 && arr.indexOf(hand.pa) < 0) {
+		game.hantei = hantei.aiko;
 	}
-	else if (self.hand == hand.gu &&
-		arr.indexOf(hand.pa) >= 0) {
-		game.kekka = kekka.make;
+	else if (self.hand == hand.choki && arr.indexOf(hand.gu) < 0 && arr.indexOf(hand.pa) < 0) {
+		game.hantei = hantei.aiko;
 	}
-	else if (self.hand == hand.choki &&
-		arr.indexOf(hand.gu) >= 0) {
-		game.kekka = kekka.make;
+	else if (self.hand == hand.pa && arr.indexOf(hand.gu) < 0 && arr.indexOf(hand.choki) < 0) {
+		game.hantei = hantei.aiko;
 	}
-	else if (self.hand == hand.pa &&
-		arr.indexOf(hand.choki) >= 0) {
-		game.kekka = kekka.make;
+	else if (self.hand == hand.gu && arr.indexOf(hand.choki) >= 0 & arr.indexOf(hand.pa) < 0) {
+		game.hantei = hantei.kachi;
+	}
+	else if (self.hand == hand.choki && arr.indexOf(hand.pa) >= 0 && arr.indexOf(hand.gu) < 0) {
+		game.hantei = hantei.kachi;
+	}
+	else if (self.hand == hand.pa && arr.indexOf(hand.gu) >= 0 && arr.indexOf(hand.choki) < 0) {
+		game.hantei = hantei.kachi;
 	}
 	else {
-		game.kekka = kekka.kachi;
+		game.hantei = hantei.make;
 	}
 }
 
-function showKekka(){
-	if (game.kekka == kekka.kachi) {
+function judgeByOpponent(){		
+	var arr = players.hands.concat();
+	arr.splice(arr.indexOf(self.hand), 1);
+
+	if (arr.indexOf(self.hand) >= 0) {
+		game.hantei = hantei.aiko;
+	}
+	else if (self.hand == hand.gu && arr.indexOf(hand.pa) >= 0) {
+		game.hantei = hantei.make;
+	}
+	else if (self.hand == hand.choki && arr.indexOf(hand.gu) >= 0) {
+		game.hantei = hantei.make;
+	}
+	else if (self.hand == hand.pa && arr.indexOf(hand.choki) >= 0) {
+		game.hantei = hantei.make;
+	}
+	else {
+		game.hantei = hantei.kachi;
+	}
+}
+
+function showHantei(){
+	if (game.hantei == hantei.kachi) {
 		$("#mess").text("勝ち！");
 	}
-	else if (game.kekka == kekka.make) {
+	else if (game.hantei == hantei.make) {
 		$("#mess").text("負け！");
 	}
-	else if (game.kekka == kekka.aiko) {
+	else if (game.hantei == hantei.aiko) {
 		$("#mess").text("あいこ！")
 	}
 }
 
-function sayKekka(){
+function sayHantei(){
 	
 }
 
