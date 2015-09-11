@@ -48,7 +48,8 @@ var stage = {
 	pon: 4,
 	aiko: 5,
 	sho: 6,
-	hantei: 7
+	hantei: 7,
+	kekka: 8
 };
 
 var hand = {
@@ -87,42 +88,87 @@ var master = {
 
 var players = {
 	num: 0,
-	hands: []
+	hands: [],
+	kachi: 0, make: 0, aiko: 0
 }
 
 var game = {
 	mode: mode.single,
-	id: "2015090522000000",
-	hantei: undefined
+	id: "99999999",
+	hantei: undefined,
 };
 
-var milkcocoa;
-var datastore;
-	
+var milkcocoa = new MilkCocoa("flagie73jdt7.mlkcca.com");
+
+var datastore = milkcocoa.dataStore(game.id);
+
+function makeGame(){
+	game.id = Math.floor(Math.random() * 99999999).toString();
+}
+
+function showStart(){
+	$(".page").hide();
+	$("#page_start").show();
+	$("#label_gameid").text(game.id);
+}
+
+function joinGame(){
+	$(".page").hide();
+	$("#page_join").show();
+}
+
+function startGame(){
+	$(".page").hide();
+	$("#page_game").show();
+	datastore = milkcocoa.dataStore(game.id);
+	datastore.on("send", receiveStatus);
+	initStatus();
+	showHajime();
+}
+
+function initStatus(){
+	master.exist = false;
+	players.num = 0;
+	players.kachi = 0; players.make = 0; players.aiko = 0;
+	self.stage = stage.hajime;
+}	
+
 function onDeviceReady() {
+	$(".page").hide();
+	$("#page_menu").show();
 
-	$("#page_janken").click(function(){
-		
+	$(".button_standalone").click(function(){
+		game.mode = mode.single;
+		self.role = role.player;
+		startGame();
 	});
 	
-	$("#button_single").click(function(){
-		game.mode = mode.single;
-		$("#mess").text("シングルモードになりました");
-	});
-    
-	$("#button_group").click(function(){
+	$(".button_no_master").click(function(){
 		game.mode = mode.group;
-		$("#mess").text("グループモードになりました");
-	});
-
-	$("#button_master").click(function(){
-		self.role = role.master;
-		$("#mess").text("親になりました");
-	});
-    
-	$("#button_player").click(function(){
 		self.role = role.player;
-		$("#mess").text("子になりました");
+		makeGame();
+		showStart();
+	});
+	
+	$(".button_as_master").click(function(){
+		game.mode = mode.group;
+		self.role = role.master;
+		makeGame();
+		showStart();
+	});
+	
+	$(".button_join_game").click(function(){
+		game.mode = mode.group;
+		self.role = role.player;
+		joinGame();
+	});	
+	
+	$("#page_join .button_start").click(function(){
+		game.id = $("#input_gameid").text();
+	});
+	
+	$(".button_start").click(function(){
+		startGame();
 	});
 
 	var oldx = 0;
@@ -136,10 +182,8 @@ function onDeviceReady() {
 		var force = Math.abs(acceleration.x - oldx + acceleration.y - oldy);
 		if (force > 15.0) {
 			if (oldt > 0 && acceleration.timestamp - olds > 200) {    // 端末をシェイク
-				ShowHajime();
-				master.exist = false;
-				players.num = 0;
-				self.stage = stage.hajime;
+				showHajime();
+				initStatus();
 				return;
 			}
 			olds = acceleration.timestamp;
@@ -196,114 +240,50 @@ function onDeviceReady() {
     },{
         frequency: 30, adjustForRotation: true
     });
-
-	milkcocoa = new MilkCocoa("flagie73jdt7.mlkcca.com");
-
-	datastore = milkcocoa.dataStore(game.id);
-
-	datastore.on("send", function(data){
-		var text = data.value.text;
-		console.log("received: " + text);
-		
-		if (data.value.role == role.master) {
-			if (data.value.stage == stage.gu) {
-				master.exist = true;
-			}
-			master.stage = data.value.stage;
-			master.hand = data.value.hand;
-		}
-		else if (data.value.role == role.player) {
-			if (data.value.stage == stage.gu) {
-				players.num++;
-				console.log("players.num:" + players.num);
-			}
-			else if (data.value.stage == stage.pon) {
-				players.hands.push(data.value.hand);
-				console.log("data.hand:" + data.value.hand);
-			}
-		}
-		
-		if (master.exist) {    // 親あり
-			if (self.role == role.player &&
-				self.stage == stage.pon &&
-				master.stage == stage.pon) {
-
-				judgeByMaster();
-				showHantei();
-				sayHantei();
-				self.stage = stage.hantei;
-			}
-		}
-		else if (players.num > 2) {    // グループ
-			if (self.stage == stage.pon &&
-				data.value.stage == stage.pon &&
-				players.hands.length >= players.num) {
-				
-				judgeByPlayers();
-				showHantei();
-				sayHantei();
-				self.stage = stage.hantei;
-			}
-		}
-		else {    // 一対一
-			if (self.stage == stage.pon &&
-				data.value.stage == stage.pon &&
-				players.hands.length >= players.num) {
-
-				judgeByOpponent();
-				showHantei();
-				sayHantei();
-				if (game.hantei != hantei.aiko) {
-					self.stage = stage.hantei;
-				}
-			}
-		}
-	});
 }
 document.addEventListener("deviceready", onDeviceReady, false);
 
-function ShowHajime(){
-	$("#mess").text("はじめるよ！");
-	$("#page_janken").css('background-image', 'url("images/Janken.png")');
+function showHajime(){
+	$("#label_mess").text("はじめるよ！");
+	$("#page_game").css('background-image', 'url("images/Janken.png")');
 }
 
 function showSaisho(){
-	$("#mess").text("最初は・・");
+	$("#label_mess").text("最初は・・");
 }
 
 function showJanken(){
-	$("#mess").text("じゃんけん・・");
+	$("#label_mess").text("じゃんけん・・");
 }
 
 function selectHand(){
 	var arr = [hand.gu, hand.choki, hand.pa];
-    self.hand = arr[Math.floor(Math.random() * 3 + 1) - 1];
+    self.hand = arr[Math.floor(Math.random() * arr.length + 1) - 1];
 }
 
 function showGu(){
-	$("#page_janken").css('background-image', 'url("images/gu.png")');
+	$("#page_game").css('background-image', 'url("images/gu.png")');
 }
 
 function showHand(){
 	if (self.hand == hand.gu) {
-		$("#page_janken").css('background-image', 'url("images/gu.png")');
+		$("#page_game").css('background-image', 'url("images/gu.png")');
 	}
 	else if (self.hand == hand.choki) {
-		$("#page_janken").css('background-image', 'url("images/choki.png")');
+		$("#page_game").css('background-image', 'url("images/choki.png")');
 	}
 	else if (self.hand == hand.pa) {
-		$("#page_janken").css('background-image', 'url("images/pa.png")');
+		$("#page_game").css('background-image', 'url("images/pa.png")');
 	}
 }
 
 function showAiko(){
-	$("#mess").text("あいこで・・");
+	$("#label_mess").text("あいこで・・");
 }
 
 function getCurrentPath(){
 	var str = location.pathname;
-    var i = str.lastIndexOf('/');
-    return str.substring(0, i+1);
+    return str.substring(0, str.lastIndexOf('/') + 1);
 }
 
 function play(path){
@@ -337,15 +317,98 @@ function saySho(){
 	play('sounds/sho.mp3');
 }
 
+function receiveStatus(data){
+	console.log("data.value.text" + data.value.text);
+
+	if (data.value.role == role.master) {
+		if (data.value.stage == stage.gu) {
+			master.exist = true;
+		}
+		master.stage = data.value.stage;
+		master.hand = data.value.hand;
+	}
+	else if (data.value.role == role.player) {
+		if (data.value.stage == stage.gu) {
+			players.num++;
+		}
+		else if (data.value.stage == stage.pon) {
+			players.hands.push(data.value.hand);
+		}
+		else if (data.value.stage == stage.hantei) {
+			if (data.value.hantei == hantei.kachi) {
+				players.kachi++;
+			}
+			else if (data.value.hantei == hantei.make) {
+				players.make++;
+			}
+			else {
+				players.aiko++;
+			}
+		}
+	}
+
+	if (master.exist) {    // 親あり
+		if (self.role == role.player &&
+			self.stage == stage.pon &&
+			master.stage == stage.pon) {
+
+			judgeByMaster();
+			showHantei();
+			sayHantei();
+			self.stage = stage.hantei;
+		}
+		if (self.role == role.master &&
+			self.stage == stage.pon) {
+
+			self.stage = stage.kekka;
+		}
+	}
+	else if (players.num > 2) {    // グループ
+		if (self.stage == stage.pon &&
+			data.value.stage == stage.pon &&
+			players.hands.length >= players.num) {
+
+			judgeByPlayers();
+			showHantei();
+			sayHantei();
+			self.stage = stage.hantei;
+		}
+	}
+	else {    // 一対一
+		if (self.stage == stage.pon &&
+			data.value.stage == stage.pon &&
+			players.hands.length >= players.num) {
+
+			judgeByOpponent();
+			showHantei();
+			sayHantei();
+			if (game.hantei != hantei.aiko) {
+				self.stage = stage.hantei;
+			}
+		}
+	}
+	if (self.stage == stage.hantei) {
+		sendStatus();
+		self.stage = stage.kekka;
+	}
+	if (self.role == role.master &&
+		self.stage == stage.kekka) {
+		showKekka();
+	}
+
+}
+
 function sendStatus(){
-	var text = "role:" + self.role + "/stage:" + self.stage + "/hand:" + self.hand;
+	var text = "role:" + self.role + "/stage:" + self.stage + "/hand:" + self.hand + "/hantei:" + game.hantei;
 	var data = {
 		role: self.role,
 		stage: self.stage,
 		hand: self.hand,
+		hantei: game.hantei,
 		text: text
 	};
 	datastore.send(data, function(){
+	},function(){
 	});
 }
 
@@ -397,6 +460,8 @@ function judgeByPlayers(){
 function judgeByOpponent(){		
 	var arr = players.hands.concat();
 	arr.splice(arr.indexOf(self.hand), 1);
+	
+	console.log("players.num:" + players.num);
 
 	if (arr.indexOf(self.hand) >= 0) {
 		game.hantei = hantei.aiko;
@@ -417,13 +482,13 @@ function judgeByOpponent(){
 
 function showHantei(){
 	if (game.hantei == hantei.kachi) {
-		$("#mess").text("勝ち！");
+		$("#label_mess").text("勝ち！");
 	}
 	else if (game.hantei == hantei.make) {
-		$("#mess").text("負け！");
+		$("#label_mess").text("負け！");
 	}
 	else if (game.hantei == hantei.aiko) {
-		$("#mess").text("あいこ！")
+		$("#label_mess").text("あいこ！")
 	}
 }
 
@@ -431,3 +496,18 @@ function sayHantei(){
 	
 }
 
+function showKekka(){
+	$("#label_mess").text("勝ち：" + players.kachi + "/負け：" + players.make + "/あいこ：" + players.aiko);
+}
+
+$(".key").click(function(){
+	var buff = $("#input_gameid").text();
+	var value = $(this).attr("value");
+	if (value == "bs") {
+		buff = buff.substr(0, buff.length - 1);
+	}
+	else {
+		buff = buff + value;
+	}
+	$("#input_gameid").text(buff);
+});

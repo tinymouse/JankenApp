@@ -30,14 +30,58 @@
 
 
 <body>
-    <div class="page" id="page_janken">
-        <div id="mess"></div>
+	<div class="page" id="page_menu">
+		<div class="button_standalone">[通信なし]</div>
+		<div class="button_no_master">[親なしで]</div>
+		<div class="button_as_master">[親になって]</div>
+		<div class="button_join_game">[参加する]</div>
+	</div>
+	
+	<div class="page" id="page_start">
+		<div>今回の Game ID です</div>
 		<p></p>
-		<div id="button_single">[シングルモード]</div>
-		<div id="button_group">[グループモード]</div>
+		<div id="label_gameid"></div>
 		<p></p>
-		<div id="button_master">[親になる]</div>
-		<div id="button_player">[子になる]</div>
+		<div class="button_start">[ゲームを始める]</div>
+	</div>
+	
+	<div class="page" id="page_join">
+		<div>Game ID を入力して下さい</div>
+		<p></p>
+		<div id="input_gameid"></div>
+		<table id="tenkeypad">
+			<tr>
+				<td></td>
+				<td></td>
+				<td value="bs" class="key">BS</td>
+			</tr>
+			<tr>
+				<td value="7" class="key">7</td>
+				<td value="8" class="key">8</td>
+				<td value="9" class="key">9</td>
+			</tr>
+			<tr>
+				<td value="4" class="key">4</td>
+				<td value="5" class="key">5</td>
+				<td value="6" class="key">6</td>
+			</tr>
+			<tr>
+				<td value="1" class="key">1</td>
+				<td value="2" class="key">2</td>
+				<td value="3" class="key">3</td>
+			</tr>
+			<tr>
+				<td value="0" class="key">0</td>
+				<td></td>
+				<td></td>
+			</tr>
+		</table>
+		<p></p>
+		<div class="button_start">[ゲームを始める]</div>
+	</div>
+	
+    <div class="page" id="page_game">
+        <div id="label_mess"></div>
     </div>
 
     <!-- IMPORTANT: Do not include a weinre script tag as part of your release builds! -->

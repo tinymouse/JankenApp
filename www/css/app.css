@@ -66,3 +66,17 @@ body,
 	background-position: center;
 	background-size: contain;
 }
+
+#tenkeypad {
+	width: 100%;
+}
+
+#tenkeypad tr {
+	height: 40px;
+}
+
+.key {
+	width: 33%;
+	margin: 5px;
+	background-color: cornflowerblue;
+}
