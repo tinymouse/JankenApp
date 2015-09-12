@@ -41,15 +41,17 @@ function myEventHandler() {
 // ...additional event handlers here...
 
 var stage = {
-	hajime: 0,
-	saisho: 1,
-	gu: 2,
-	janken: 3,
-	pon: 4,
-	aiko: 5,
-	sho: 6,
-	hantei: 7,
-	kekka: 8
+	join: -1,
+	start: 0,
+	hajime: 1,
+	saisho: 2,
+	gu: 3,
+	janken: 4,
+	pon: 5,
+	aiko: 6,
+	sho: 7,
+	hantei: 8,
+	kekka: 9
 };
 
 var hand = {
@@ -75,14 +77,14 @@ var hantei = {
 };
 
 var self = {
-	stage: stage.hajime,
+	stage: stage.start,
 	hand: undefined,
 	role: role.player,
 };
 
 var master = {
 	exist: false,
-	stage: stage.hajime,
+	stage: stage.start,
 	hand: undefined,
 };
 
@@ -98,30 +100,44 @@ var game = {
 	hantei: undefined,
 };
 
-var milkcocoa = new MilkCocoa("flagie73jdt7.mlkcca.com");
-
-var datastore = milkcocoa.dataStore(game.id);
-
 function makeGame(){
 	game.id = Math.floor(Math.random() * 99999999).toString();
+	datastore = milkcocoa.dataStore(game.id);
+	datastore.on("send", receiveStatus);
 }
 
 function showStart(){
 	$(".page").hide();
 	$("#page_start").show();
 	$("#label_gameid").text(game.id);
+	self.stage = stage.start;
+}
+
+function showJoin(){
+	$(".page").hide();
+	$("#page_join").show();
+	self.stage = stage.join;
 }
 
 function joinGame(){
-	$(".page").hide();
-	$("#page_join").show();
+	datastore = milkcocoa.dataStore(game.id);
+	datastore.on("send", receiveStatus);
+	sendStatus();
+	setTimeout("checkJoin()", 1000);
+}
+
+function checkJoin(){
+	if (self.stage == stage.join) {
+		alert("ゲームに参加が失敗");
+	}
+	else {
+		startGame();
+	}
 }
 
 function startGame(){
 	$(".page").hide();
 	$("#page_game").show();
-	datastore = milkcocoa.dataStore(game.id);
-	datastore.on("send", receiveStatus);
 	initStatus();
 	showHajime();
 }
@@ -131,6 +147,7 @@ function initStatus(){
 	players.num = 0;
 	players.kachi = 0; players.make = 0; players.aiko = 0;
 	self.stage = stage.hajime;
+	self.hand = undefined;
 }	
 
 function onDeviceReady() {
@@ -157,20 +174,22 @@ function onDeviceReady() {
 		showStart();
 	});
 	
-	$(".button_join_game").click(function(){
-		game.mode = mode.group;
-		self.role = role.player;
-		joinGame();
-	});	
-	
-	$("#page_join .button_start").click(function(){
-		game.id = $("#input_gameid").text();
-	});
-	
 	$(".button_start").click(function(){
 		startGame();
 	});
 
+	$(".button_join_game").click(function(){
+		game.mode = mode.group;
+		self.role = role.player;
+		showJoin();
+	});	
+	
+	$(".button_join").click(function(){
+		game.id = $("#input_gameid").text();
+		joinGame();
+		console.log("joinGame");
+	});
+	
 	var oldx = 0;
 	var oldy = 0;
 	var oldz = 0;
@@ -244,11 +263,16 @@ function onDeviceReady() {
 document.addEventListener("deviceready", onDeviceReady, false);
 
 function showHajime(){
+	$(".page").hide();
+	$("#page_hajime").show();
 	$("#label_mess").text("はじめるよ！");
-	$("#page_game").css('background-image', 'url("images/Janken.png")');
+	$("#image_back").css('background-image', 'url("images/Janken.png")');
 }
 
 function showSaisho(){
+	$(".page").hide();
+	$("#page_game").show();
+	$("#image_hantei").hide();
 	$("#label_mess").text("最初は・・");
 }
 
@@ -262,18 +286,18 @@ function selectHand(){
 }
 
 function showGu(){
-	$("#page_game").css('background-image', 'url("images/gu.png")');
+	$("#image_hand").css('background-image', 'url("images/gu.png")');
 }
 
 function showHand(){
 	if (self.hand == hand.gu) {
-		$("#page_game").css('background-image', 'url("images/gu.png")');
+		$("#image_hand").css('background-image', 'url("images/gu.png")');
 	}
 	else if (self.hand == hand.choki) {
-		$("#page_game").css('background-image', 'url("images/choki.png")');
+		$("#image_hand").css('background-image', 'url("images/choki.png")');
 	}
 	else if (self.hand == hand.pa) {
-		$("#page_game").css('background-image', 'url("images/pa.png")');
+		$("#image_hand").css('background-image', 'url("images/pa.png")');
 	}
 }
 
@@ -317,9 +341,26 @@ function saySho(){
 	play('sounds/sho.mp3');
 }
 
+var milkcocoa = new MilkCocoa("flagie73jdt7.mlkcca.com");
+var datastore = milkcocoa.dataStore(game.id);
+
+function sendStatus(){
+	var text = "role:" + self.role + "/stage:" + self.stage + "/hand:" + self.hand + "/hantei:" + game.hantei;
+	var data = {
+		role: self.role,
+		stage: self.stage,
+		hand: self.hand,
+		hantei: game.hantei,
+		text: text
+	};
+	datastore.send(data, function(){
+	},function(){
+	});
+}
+
 function receiveStatus(data){
 	console.log("data.value.text" + data.value.text);
-
+	
 	if (data.value.role == role.master) {
 		if (data.value.stage == stage.gu) {
 			master.exist = true;
@@ -345,6 +386,13 @@ function receiveStatus(data){
 				players.aiko++;
 			}
 		}
+		else if (data.value.stage == stage.join) {
+			sendStatus();
+		}
+	}
+	if (self.stage == stage.join &&
+	    data.value.stage != stage.join) {
+		self.stage = stage.start;
 	}
 
 	if (master.exist) {    // 親あり
@@ -395,21 +443,6 @@ function receiveStatus(data){
 		self.stage == stage.kekka) {
 		showKekka();
 	}
-
-}
-
-function sendStatus(){
-	var text = "role:" + self.role + "/stage:" + self.stage + "/hand:" + self.hand + "/hantei:" + game.hantei;
-	var data = {
-		role: self.role,
-		stage: self.stage,
-		hand: self.hand,
-		hantei: game.hantei,
-		text: text
-	};
-	datastore.send(data, function(){
-	},function(){
-	});
 }
 
 function judgeByMaster(){		
@@ -490,6 +523,17 @@ function showHantei(){
 	else if (game.hantei == hantei.aiko) {
 		$("#label_mess").text("あいこ！")
 	}
+
+	if (game.hantei == hantei.kachi) {
+		$("#image_hantei").css('background-image', 'url("images/maru.png")');
+	}
+	else if (game.hantei == hantei.make) {
+		$("#image_hantei").css('background-image', 'url("images/batsu.png")');
+	}
+	else if (game.hantei == hantei.aiko) {
+		$("#image_hantei").css('background-image', 'url("images/sankaku.png")');
+	}
+	$("#image_hantei").show();
 }
 
 function sayHantei(){
@@ -511,3 +555,4 @@ $(".key").click(function(){
 	}
 	$("#input_gameid").text(buff);
 });
+

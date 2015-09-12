@@ -31,10 +31,10 @@
 
 <body>
 	<div class="page" id="page_menu">
-		<div class="button_standalone">[通信なし]</div>
-		<div class="button_no_master">[親なしで]</div>
-		<div class="button_as_master">[親になって]</div>
-		<div class="button_join_game">[参加する]</div>
+		<div class="button_menu button_standalone">[通信なし]</div>
+		<div class="button_menu button_no_master">[親なしで]</div>
+		<div class="button_menu button_as_master">[親になって]</div>
+		<div class="button_menu button_join_game">[参加する]</div>
 	</div>
 	
 	<div class="page" id="page_start">
@@ -77,11 +77,17 @@
 			</tr>
 		</table>
 		<p></p>
-		<div class="button_start">[ゲームを始める]</div>
+		<div class="button_join">[ゲームを始める]</div>
+	</div>
+	
+	<div class="page" id="page_hajime">
+		<div class="fill" id="image_back"></div>
 	</div>
 	
     <div class="page" id="page_game">
         <div id="label_mess"></div>
+		<div class="fill" id="image_hand"></div>
+		<div class="fill" id="image_hantei"></div>
     </div>
 
     <!-- IMPORTANT: Do not include a weinre script tag as part of your release builds! -->
