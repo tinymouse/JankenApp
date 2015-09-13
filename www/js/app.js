@@ -41,6 +41,7 @@ function myEventHandler() {
 // ...additional event handlers here...
 
 var stage = {
+	menu: -2,
 	join: -1,
 	start: 0,
 	hajime: 1,
@@ -96,12 +97,18 @@ var players = {
 
 var game = {
 	mode: mode.single,
-	id: "99999999",
+	id: "999999",
 	hantei: undefined,
 };
 
+function showMenu(){
+	$(".page").hide();
+	$("#page_menu").show();
+	self.stage = stage.menu;
+}
+
 function makeGame(){
-	game.id = Math.floor(Math.random() * 99999999).toString();
+	game.id = Math.floor(Math.random() * 999999).toString();
 	datastore = milkcocoa.dataStore(game.id);
 	datastore.on("send", receiveStatus);
 }
@@ -128,7 +135,7 @@ function joinGame(){
 
 function checkJoin(){
 	if (self.stage == stage.join) {
-		alert("ゲームに参加が失敗");
+		alert("ゲームに参加できませんでした。入力した ID を確認して下さい。あるいは通信環境を確認して下さい。");
 	}
 	else {
 		startGame();
@@ -138,56 +145,59 @@ function checkJoin(){
 function startGame(){
 	$(".page").hide();
 	$("#page_game").show();
-	initStatus();
 	showHajime();
 }
 
-function initStatus(){
+function showHajime(){
+	$(".page").hide();
+	$("#page_hajime").show();
+	$("#label_mess").text("はじめるよ！");
+	$("#image_hajime").css('background-image', 'url("images/Janken.png")');
 	master.exist = false;
 	players.num = 0;
 	players.kachi = 0; players.make = 0; players.aiko = 0;
 	self.stage = stage.hajime;
 	self.hand = undefined;
-}	
+}
 
 function onDeviceReady() {
-	$(".page").hide();
-	$("#page_menu").show();
 
-	$(".button_standalone").click(function(){
+	showMenu();
+
+	$("#button_standalone").click(function(){
 		game.mode = mode.single;
 		self.role = role.player;
 		startGame();
 	});
 	
-	$(".button_no_master").click(function(){
+	$("#button_no_master").click(function(){
 		game.mode = mode.group;
 		self.role = role.player;
 		makeGame();
 		showStart();
 	});
 	
-	$(".button_as_master").click(function(){
+	$("#button_as_master").click(function(){
 		game.mode = mode.group;
 		self.role = role.master;
 		makeGame();
 		showStart();
 	});
 	
-	$(".button_start").click(function(){
+	$("#button_start_game").click(function(){
 		startGame();
 	});
 
-	$(".button_join_game").click(function(){
+	$("#button_as_player").click(function(){
 		game.mode = mode.group;
 		self.role = role.player;
+		$("#input_gameid").empty();
 		showJoin();
 	});	
 	
-	$(".button_join").click(function(){
+	$("#button_join_game").click(function(){
 		game.id = $("#input_gameid").text();
 		joinGame();
-		console.log("joinGame");
 	});
 	
 	var oldx = 0;
@@ -201,13 +211,17 @@ function onDeviceReady() {
 		var force = Math.abs(acceleration.x - oldx + acceleration.y - oldy);
 		if (force > 15.0) {
 			if (oldt > 0 && acceleration.timestamp - olds > 200) {    // 端末をシェイク
-				showHajime();
-				initStatus();
-				return;
+				if ([stage.hajime, stage.start, stage.join, stage.menu].indexOf(self.stage) >= 0) {
+					showMenu();	
+				}
+				else {
+					showHajime();
+				}
 			}
 			olds = acceleration.timestamp;
 		}		
-		else if ((acceleration.z > 0) != (oldz > 0)) {    // 端末を表から裏、裏から表に
+		else if ((acceleration.z > 0) != (oldz > 0) &&
+			Math.abs(acceleration.z) > 2) {    // 端末を表から裏、裏から表に
 			
 			if (self.stage == stage.hajime && acceleration.z < 0) {
 				showSaisho();
@@ -247,11 +261,15 @@ function onDeviceReady() {
 			if (game.mode != mode.single) {
 				sendStatus();
 			}
+
+			oldz = acceleration.z;
 		}
 		
 		oldx = acceleration.x;
 		oldy = acceleration.y;
+/*
         oldz = acceleration.z;
+*/
 		oldt = acceleration.timestamp;
 		
     },function(){
@@ -261,13 +279,6 @@ function onDeviceReady() {
     });
 }
 document.addEventListener("deviceready", onDeviceReady, false);
-
-function showHajime(){
-	$(".page").hide();
-	$("#page_hajime").show();
-	$("#label_mess").text("はじめるよ！");
-	$("#image_back").css('background-image', 'url("images/Janken.png")');
-}
 
 function showSaisho(){
 	$(".page").hide();
@@ -494,8 +505,6 @@ function judgeByOpponent(){
 	var arr = players.hands.concat();
 	arr.splice(arr.indexOf(self.hand), 1);
 	
-	console.log("players.num:" + players.num);
-
 	if (arr.indexOf(self.hand) >= 0) {
 		game.hantei = hantei.aiko;
 	}

@@ -78,25 +78,36 @@ body,
 	background-size: contain;
 }
 
-.button_menu {
-	margin: 30px auto;
-	height: 50px;
+#page_menu {
+	background-image: url("../images/Janken.png");
+}
+
+#block_menu {
+	
+}
+
+.button {
+	margin: 10px 10px;
+	padding: 15px;
+	background-color: azure;
+	box-shadow: 5px 5px 10px;
 }
 
 #tenkeypad {
 	width: 100%;
+	padding: 10px;
 }
 
 #input_gameid {
-	height: 60px;
+	height: 50px;
 }
 
 #tenkeypad tr {
-	height: 60px;
+	height: 50px;
 }
 
 .key {
 	width: 33%;
-	margin: 5px;
+	margin: 10px;
 	background-color: cornflowerblue;
 }
