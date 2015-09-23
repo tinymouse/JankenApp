@@ -101,105 +101,8 @@ var game = {
 	hantei: undefined,
 };
 
-function showMenu(){
-	$(".page").hide();
-	$("#page_menu").show();
-	self.stage = stage.menu;
-}
+document.addEventListener("deviceready", function(){
 
-function makeGame(){
-	game.id = Math.floor(Math.random() * 999999).toString();
-	datastore = milkcocoa.dataStore(game.id);
-	datastore.on("send", receiveStatus);
-}
-
-function showStart(){
-	$(".page").hide();
-	$("#page_start").show();
-	$("#label_gameid").text(game.id);
-	self.stage = stage.start;
-}
-
-function showJoin(){
-	$(".page").hide();
-	$("#page_join").show();
-	self.stage = stage.join;
-}
-
-function joinGame(){
-	datastore = milkcocoa.dataStore(game.id);
-	datastore.on("send", receiveStatus);
-	sendStatus();
-	setTimeout("checkJoin()", 1000);
-}
-
-function checkJoin(){
-	if (self.stage == stage.join) {
-		alert("ゲームに参加できませんでした。入力した ID を確認して下さい。あるいは通信環境を確認して下さい。");
-	}
-	else {
-		startGame();
-	}
-}
-
-function startGame(){
-	$(".page").hide();
-	$("#page_game").show();
-	showHajime();
-}
-
-function showHajime(){
-	$(".page").hide();
-	$("#page_hajime").show();
-	$("#label_mess").text("はじめるよ！");
-	$("#image_hajime").css('background-image', 'url("images/Janken.png")');
-	master.exist = false;
-	players.num = 0;
-	players.kachi = 0; players.make = 0; players.aiko = 0;
-	self.stage = stage.hajime;
-	self.hand = undefined;
-}
-
-function onDeviceReady() {
-
-	showMenu();
-
-	$("#button_standalone").click(function(){
-		game.mode = mode.single;
-		self.role = role.player;
-		startGame();
-	});
-	
-	$("#button_no_master").click(function(){
-		game.mode = mode.group;
-		self.role = role.player;
-		makeGame();
-		showStart();
-	});
-	
-	$("#button_as_master").click(function(){
-		game.mode = mode.group;
-		self.role = role.master;
-		makeGame();
-		showStart();
-	});
-	
-	$("#button_start_game").click(function(){
-		startGame();
-	});
-
-	$("#button_as_player").click(function(){
-		game.mode = mode.group;
-		self.role = role.player;
-		$("#input_gameid").empty();
-		showJoin();
-	});	
-	
-	$("#button_join_game").click(function(){
-		game.id = $("#input_gameid").text();
-		joinGame();
-	});
-	
 	var oldx = 0;
 	var oldy = 0;
 	var oldz = 0;
@@ -277,8 +180,10 @@ function onDeviceReady() {
     },{
         frequency: 30, adjustForRotation: true
     });
-}
-document.addEventListener("deviceready", onDeviceReady, false);
+	
+	showMenu();
+
+}, false);
 
 function showSaisho(){
 	$(".page").hide();
@@ -350,6 +255,103 @@ function sayAiko(){
 
 function saySho(){
 	play('sounds/sho.mp3');
+}
+
+function judgeByMaster(){		
+	if (self.hand == master.hand) {
+		game.hantei = hantei.aiko;
+	}
+	else if (self.hand == hand.gu && master.hand == hand.choki) {
+		game.hantei = hantei.kachi;
+	}
+	else if (self.hand == hand.choki && master.hand == hand.pa) {
+		game.hantei = hantei.kachi;
+	}
+	else if (self.hand == hand.pa && master.hand == hand.gu) {
+		game.hantei = hantei.kachi;
+	}
+	else {
+		game.hantei = hantei.make;
+	}
+}
+
+function judgeByPlayers(){
+	var arr = players.hands.concat();
+	arr.splice(arr.indexOf(self.hand), 1);
+
+	if (self.hand == hand.gu && arr.indexOf(hand.choki) < 0 && arr.indexOf(hand.pa) < 0) {
+		game.hantei = hantei.aiko;
+	}
+	else if (self.hand == hand.choki && arr.indexOf(hand.gu) < 0 && arr.indexOf(hand.pa) < 0) {
+		game.hantei = hantei.aiko;
+	}
+	else if (self.hand == hand.pa && arr.indexOf(hand.gu) < 0 && arr.indexOf(hand.choki) < 0) {
+		game.hantei = hantei.aiko;
+	}
+	else if (self.hand == hand.gu && arr.indexOf(hand.choki) >= 0 & arr.indexOf(hand.pa) < 0) {
+		game.hantei = hantei.kachi;
+	}
+	else if (self.hand == hand.choki && arr.indexOf(hand.pa) >= 0 && arr.indexOf(hand.gu) < 0) {
+		game.hantei = hantei.kachi;
+	}
+	else if (self.hand == hand.pa && arr.indexOf(hand.gu) >= 0 && arr.indexOf(hand.choki) < 0) {
+		game.hantei = hantei.kachi;
+	}
+	else {
+		game.hantei = hantei.make;
+	}
+}
+
+function judgeByOpponent(){		
+	var arr = players.hands.concat();
+	arr.splice(arr.indexOf(self.hand), 1);
+	
+	if (arr.indexOf(self.hand) >= 0) {
+		game.hantei = hantei.aiko;
+	}
+	else if (self.hand == hand.gu && arr.indexOf(hand.pa) >= 0) {
+		game.hantei = hantei.make;
+	}
+	else if (self.hand == hand.choki && arr.indexOf(hand.gu) >= 0) {
+		game.hantei = hantei.make;
+	}
+	else if (self.hand == hand.pa && arr.indexOf(hand.choki) >= 0) {
+		game.hantei = hantei.make;
+	}
+	else {
+		game.hantei = hantei.kachi;
+	}
+}
+
+function showHantei(){
+	if (game.hantei == hantei.kachi) {
+		$("#label_mess").text("勝ち！");
+	}
+	else if (game.hantei == hantei.make) {
+		$("#label_mess").text("負け！");
+	}
+	else if (game.hantei == hantei.aiko) {
+		$("#label_mess").text("あいこ！")
+	}
+
+	if (game.hantei == hantei.kachi) {
+		$("#image_hantei").css('background-image', 'url("images/maru.png")');
+	}
+	else if (game.hantei == hantei.make) {
+		$("#image_hantei").css('background-image', 'url("images/batsu.png")');
+	}
+	else if (game.hantei == hantei.aiko) {
+		$("#image_hantei").css('background-image', 'url("images/sankaku.png")');
+	}
+	$("#image_hantei").show();
+}
+
+function sayHantei(){
+	
+}
+
+function showKekka(){
+	$("#label_mess").text("勝ち：" + players.kachi + "/負け：" + players.make + "/あいこ：" + players.aiko);
 }
 
 var milkcocoa = new MilkCocoa("flagie73jdt7.mlkcca.com");
@@ -456,112 +458,164 @@ function receiveStatus(data){
 	}
 }
 
-function judgeByMaster(){		
-	if (self.hand == master.hand) {
-		game.hantei = hantei.aiko;
-	}
-	else if (self.hand == hand.gu && master.hand == hand.choki) {
-		game.hantei = hantei.kachi;
-	}
-	else if (self.hand == hand.choki && master.hand == hand.pa) {
-		game.hantei = hantei.kachi;
-	}
-	else if (self.hand == hand.pa && master.hand == hand.gu) {
-		game.hantei = hantei.kachi;
-	}
-	else {
-		game.hantei = hantei.make;
-	}
+function showMenu(){
+	$(".page").hide();
+	$("#page_menu").show();
+	self.stage = stage.menu;
 }
 
-function judgeByPlayers(){
-	var arr = players.hands.concat();
-	arr.splice(arr.indexOf(self.hand), 1);
+function makeGame(){
+	game.id = Math.floor(Math.random() * 999999).toString();
+/*
+	milkcocoa.dataStore("games").push({
+		id: game.id,
+		dt: new Date()
+	});
+*/
+	datastore = milkcocoa.dataStore(game.id);
+	datastore.on("send", receiveStatus);
 
-	if (self.hand == hand.gu && arr.indexOf(hand.choki) < 0 && arr.indexOf(hand.pa) < 0) {
-		game.hantei = hantei.aiko;
-	}
-	else if (self.hand == hand.choki && arr.indexOf(hand.gu) < 0 && arr.indexOf(hand.pa) < 0) {
-		game.hantei = hantei.aiko;
-	}
-	else if (self.hand == hand.pa && arr.indexOf(hand.gu) < 0 && arr.indexOf(hand.choki) < 0) {
-		game.hantei = hantei.aiko;
-	}
-	else if (self.hand == hand.gu && arr.indexOf(hand.choki) >= 0 & arr.indexOf(hand.pa) < 0) {
-		game.hantei = hantei.kachi;
-	}
-	else if (self.hand == hand.choki && arr.indexOf(hand.pa) >= 0 && arr.indexOf(hand.gu) < 0) {
-		game.hantei = hantei.kachi;
-	}
-	else if (self.hand == hand.pa && arr.indexOf(hand.gu) >= 0 && arr.indexOf(hand.choki) < 0) {
-		game.hantei = hantei.kachi;
-	}
-	else {
-		game.hantei = hantei.make;
-	}
+	milkcocoa.dataStore("games").on("send", function(data){
+		if (data.value.role == role.player) {
+			milkcocoa.dataStore("games").send({
+				role: role.master,
+				id: game.id,
+				dt: new Date()
+			},function(){
+			},function(){
+			});
+		}
+	});
+	milkcocoa.dataStore("games").send({
+		role: role.master,
+		stage: stage.join,
+		id: game.id
+	});
 }
 
-function judgeByOpponent(){		
-	var arr = players.hands.concat();
-	arr.splice(arr.indexOf(self.hand), 1);
+function showStart(){
+	$(".page").hide();
+	$("#page_start").show();
+	$("#label_gameid").text(game.id);
+	self.stage = stage.start;
+}
+
+function showJoin(){
+	$(".page").hide();
+	$("#page_join").show();
+	self.stage = stage.join;
 	
-	if (arr.indexOf(self.hand) >= 0) {
-		game.hantei = hantei.aiko;
-	}
-	else if (self.hand == hand.gu && arr.indexOf(hand.pa) >= 0) {
-		game.hantei = hantei.make;
-	}
-	else if (self.hand == hand.choki && arr.indexOf(hand.gu) >= 0) {
-		game.hantei = hantei.make;
-	}
-	else if (self.hand == hand.pa && arr.indexOf(hand.choki) >= 0) {
-		game.hantei = hantei.make;
+/*
+	milkcocoa.dataStore("games").stream().size(10).sort("asc").next(function(err, data){
+		var tm = new Date();
+		data.forEach(function(datum){
+			if (tm - datum.value.dt >= 10000) return;
+			console.log("datum:" + datum.value.id);
+			$("<li />").text(datum.value.id).appendTo($("#list_gameid"));
+		});
+	});
+*/
+	milkcocoa.dataStore("games").on("send", function(data){
+		if (data.value.role == role.master) {
+			console.log("data:" + data.value.id);
+			$("<input type='radio' name='gameid' />")
+			    .val(data.value.id)
+				.add($("<span />").text(data.value.id))
+				.prop("checked", true)
+				.appendTo($("#list_gameid"));
+		}
+	});
+	milkcocoa.dataStore("games").send({
+		role: role.player,
+		stage: stage.join,
+	});
+}
+
+function joinGame(){
+	datastore = milkcocoa.dataStore(game.id);
+	datastore.on("send", receiveStatus);
+	sendStatus();
+	setTimeout("checkJoin()", 1000);
+}
+
+function checkJoin(){
+	if (self.stage == stage.join) {
+		alert("ゲームに参加できませんでした。入力した ID を確認して下さい。あるいは通信環境を確認して下さい。");
 	}
 	else {
-		game.hantei = hantei.kachi;
+		startGame();
 	}
 }
 
-function showHantei(){
-	if (game.hantei == hantei.kachi) {
-		$("#label_mess").text("勝ち！");
-	}
-	else if (game.hantei == hantei.make) {
-		$("#label_mess").text("負け！");
-	}
-	else if (game.hantei == hantei.aiko) {
-		$("#label_mess").text("あいこ！")
-	}
-
-	if (game.hantei == hantei.kachi) {
-		$("#image_hantei").css('background-image', 'url("images/maru.png")');
-	}
-	else if (game.hantei == hantei.make) {
-		$("#image_hantei").css('background-image', 'url("images/batsu.png")');
-	}
-	else if (game.hantei == hantei.aiko) {
-		$("#image_hantei").css('background-image', 'url("images/sankaku.png")');
-	}
-	$("#image_hantei").show();
+function startGame(){
+	$(".page").hide();
+	$("#page_game").show();
+	showHajime();
 }
 
-function sayHantei(){
+function showHajime(){
+	$(".page").hide();
+	$("#page_hajime").show();
+	$("#label_mess").text("はじめるよ！");
+	$("#image_hajime").css('background-image', 'url("images/Janken.png")');
+	master.exist = false;
+	players.num = 0;
+	players.kachi = 0; players.make = 0; players.aiko = 0;
+	self.stage = stage.hajime;
+	self.hand = undefined;
+}
+
+$(document).ready(function(){
+
+	$("#button_standalone").click(function(){
+		game.mode = mode.single;
+		self.role = role.player;
+		startGame();
+	});
 	
-}
+	$("#button_no_master").click(function(){
+		game.mode = mode.group;
+		self.role = role.player;
+		makeGame();
+		showStart();
+	});
+	
+	$("#button_as_master").click(function(){
+		game.mode = mode.group;
+		self.role = role.master;
+		makeGame();
+		showStart();
+	});
+	
+	$("#button_start_game").click(function(){
+		startGame();
+	});
 
-function showKekka(){
-	$("#label_mess").text("勝ち：" + players.kachi + "/負け：" + players.make + "/あいこ：" + players.aiko);
-}
-
-$(".key").click(function(){
-	var buff = $("#input_gameid").text();
-	var value = $(this).attr("value");
-	if (value == "bs") {
-		buff = buff.substr(0, buff.length - 1);
-	}
-	else {
-		buff = buff + value;
-	}
-	$("#input_gameid").text(buff);
+	$("#button_as_player").click(function(){
+		game.mode = mode.group;
+		self.role = role.player;
+		$("#input_gameid").empty();
+		showJoin();
+	});	
+	
+	$("#button_join_game").click(function(){
+/*
+		game.id = $("#input_gameid").text();
+*/
+		game.id = $('input[name=gameid]:checked').val();
+		joinGame();
+	});
+	
+	$(".key").click(function(){
+		var buff = $("#input_gameid").text();
+		var value = $(this).attr("value");
+		if (value == "bs") {
+			buff = buff.substr(0, buff.length - 1);
+		}
+		else {
+			buff = buff + value;
+		}
+		$("#input_gameid").text(buff);
+	});
+	
 });
-
