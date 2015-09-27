@@ -1,11 +1,11 @@
 {
   "project": {
-    "projectSettingsVersion": "1.2",
+    "projectSettingsVersion": "2.0.0",
     "creationData": {
       "projectTypeName": "com.intel.xdk.projecttype.jsapp",
       "src": "https://appcenter.html5tools-software.intel.com/api/v2.0/redirect/projectrenderers/release-2015-ww32/jsapp/templates-blank-cordova-project/sample.zip",
       "projectGuid": "4a03b9d4-9ff4-440e-92cc-54615307f664",
-      "lastModifiedDate": 1441031457087,
+      "lastModifiedDate": 1443262961632,
       "creationDate": 1440328242065
     },
     "XDK-app-designer": "false",
@@ -24,7 +24,15 @@
         "data": {},
         "paramvals": {},
         "dependsOn": [],
-        "dependedBy": []
+        "dependedBy": [],
+        "originType": "cordova.io",
+        "origin": "org.apache.cordova.device",
+        "permissions": {},
+        "topLevel": true,
+        "checksum": "87180a02",
+        "gitref": "",
+        "name": "Device",
+        "description": "Cordova Device Plugin"
       },
       {
         "id": "org.apache.cordova.splashscreen",
@@ -33,7 +41,15 @@
         "data": {},
         "paramvals": {},
         "dependsOn": [],
-        "dependedBy": []
+        "dependedBy": [],
+        "originType": "cordova.io",
+        "origin": "org.apache.cordova.splashscreen",
+        "permissions": {},
+        "topLevel": true,
+        "checksum": "ae76b446",
+        "gitref": "",
+        "name": "Splashscreen",
+        "description": "Cordova Splashscreen Plugin"
       },
       {
         "id": "org.apache.cordova.device-motion",
@@ -42,7 +58,15 @@
         "data": {},
         "paramvals": {},
         "dependsOn": [],
-        "dependedBy": []
+        "dependedBy": [],
+        "originType": "cordova.io",
+        "origin": "org.apache.cordova.device-motion",
+        "permissions": {},
+        "topLevel": true,
+        "checksum": "e4ef2344",
+        "gitref": "",
+        "name": "Device Motion",
+        "description": "Cordova Device Motion Plugin"
       },
       {
         "id": "org.apache.cordova.media",
@@ -51,6 +75,43 @@
         "data": {},
         "paramvals": {},
         "dependsOn": [],
+        "dependedBy": [],
+        "originType": "cordova.io",
+        "origin": "org.apache.cordova.media",
+        "permissions": {
+          "android:name": [
+            "android.permission.RECORD_AUDIO",
+            "android.permission.MODIFY_AUDIO_SETTINGS",
+            "android.permission.WRITE_EXTERNAL_STORAGE",
+            "android.permission.READ_PHONE_STATE"
+          ]
+        },
+        "topLevel": true,
+        "checksum": "e06f1af9",
+        "gitref": "",
+        "name": "Media",
+        "description": "Cordova Media Plugin"
+      },
+      {
+        "id": "org.apache.cordova.file",
+        "name": "File",
+        "version": "1.3.2",
+        "originType": "cordova.io",
+        "origin": "org.apache.cordova.file",
+        "gitref": "",
+        "paramvals": {},
+        "sourceLocation": "plugins/org.apache.cordova.file",
+        "selectedState": "Included",
+        "checksum": "143330fa",
+        "dependsOn": [],
+        "topLevel": false,
+        "permissions": {
+          "android:name": [
+            "android.permission.WRITE_EXTERNAL_STORAGE"
+          ]
+        },
+        "description": "Cordova File Plugin",
+        "data": {},
         "dependedBy": []
       }
     ],
@@ -67,11 +128,14 @@
         "isActive_": true,
         "appName_": "Jankenpon",
         "appID_": "janken.tinymouse.jp",
-        "appAccess_": [
-          {
-            "origin": "*"
-          }
-        ],
+        "appAccess_": {
+          "mode": "legacy",
+          "network": [
+            "*"
+          ],
+          "intents": [],
+          "navigation": []
+        },
         "icons_": [],
         "splashes_": [],
         "addlPermissions_": "",
@@ -96,11 +160,14 @@
         "isActive_": true,
         "appName_": "Jankenpon",
         "appID_": "janken.tinymouse.jp",
-        "appAccess_": [
-          {
-            "origin": "*"
-          }
-        ],
+        "appAccess_": {
+          "mode": "legacy",
+          "network": [
+            "*"
+          ],
+          "intents": [],
+          "navigation": []
+        },
         "icons_": [],
         "splashes_": [],
         "addlPermissions_": "",
@@ -124,11 +191,14 @@
         "isActive_": true,
         "appName_": "Jankenpon",
         "appID_": "janken.tinymouse.jp",
-        "appAccess_": [
-          {
-            "origin": "*"
-          }
-        ],
+        "appAccess_": {
+          "mode": "legacy",
+          "network": [
+            "*"
+          ],
+          "intents": [],
+          "navigation": []
+        },
         "icons_": [],
         "splashes_": [],
         "addlPermissions_": "",
@@ -151,11 +221,14 @@
         "isActive_": true,
         "appName_": "Jankenpon",
         "appID_": "janken.tinymouse.jp",
-        "appAccess_": [
-          {
-            "origin": "*"
-          }
-        ],
+        "appAccess_": {
+          "mode": "legacy",
+          "network": [
+            "*"
+          ],
+          "intents": [],
+          "navigation": []
+        },
         "icons_": [],
         "splashes_": [],
         "addlPermissions_": "",
@@ -175,11 +248,14 @@
         "isActive_": false,
         "appName_": "Jankenpon",
         "appID_": "not.yet.specified",
-        "appAccess_": [
-          {
-            "origin": "*"
-          }
-        ],
+        "appAccess_": {
+          "mode": "legacy",
+          "network": [
+            "*"
+          ],
+          "intents": [],
+          "navigation": []
+        },
         "icons_": [],
         "splashes_": [],
         "addlPermissions_": "",
@@ -195,11 +271,14 @@
         "isActive_": false,
         "appName_": "Jankenpon",
         "appID_": "not.yet.specified",
-        "appAccess_": [
-          {
-            "origin": "*"
-          }
-        ],
+        "appAccess_": {
+          "mode": "legacy",
+          "network": [
+            "*"
+          ],
+          "intents": [],
+          "navigation": []
+        },
         "icons_": [],
         "splashes_": [],
         "addlPermissions_": "",
@@ -215,11 +294,14 @@
         "isActive_": false,
         "appName_": "Jankenpon",
         "appID_": "not.yet.specified",
-        "appAccess_": [
-          {
-            "origin": "*"
-          }
-        ],
+        "appAccess_": {
+          "mode": "legacy",
+          "network": [
+            "*"
+          ],
+          "intents": [],
+          "navigation": []
+        },
         "icons_": [],
         "splashes_": [],
         "addlPermissions_": "",
@@ -235,21 +317,49 @@
         "isActive_": false,
         "appName_": "Jankenpon",
         "appID_": "not.yet.specified",
-        "appAccess_": [
-          {
-            "origin": "*"
-          }
-        ],
+        "appAccess_": {
+          "mode": "legacy",
+          "network": [
+            "*"
+          ],
+          "intents": [],
+          "navigation": []
+        },
         "icons_": [],
         "splashes_": [],
         "addlPermissions_": "",
         "excludedLibraries_": "",
         "appAuthor_": "Intel XDK",
         "appVersion_": "0.0.1"
+      },
+      "WP81": {
+        "platform_": "wp81",
+        "runtime_": "Cordova 3.x",
+        "name_": "WP81",
+        "preferences_": {},
+        "isActive_": true,
+        "appName_": "JankenApp",
+        "appID_": "not.yet.specified",
+        "appAccess_": {
+          "mode": "legacy",
+          "network": [],
+          "intents": [],
+          "navigation": []
+        },
+        "icons_": [],
+        "splashes_": [],
+        "addlPermissions_": "",
+        "excludedLibraries_": "",
+        "appVersion_": "0.0.0.1",
+        "cordovaCLIVersion_": "5.1.1"
       }
     },
     "gameAssetDirectory": "asset",
     "gameMetadata": {},
-    "projectTags": []
+    "projectTags": [],
+    "testDirectory": "test"
+  },
+  "editorTab": {
+    "showLiveDevelopmentTasksPanel": false
   }
 }

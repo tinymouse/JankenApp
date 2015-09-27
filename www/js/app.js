@@ -403,10 +403,12 @@ function receiveStatus(data){
 			sendStatus();
 		}
 	}
+/*
 	if (self.stage == stage.join &&
 	    data.value.stage != stage.join) {
 		self.stage = stage.start;
 	}
+*/
 
 	if (master.exist) {    // 親あり
 		if (self.role == role.player &&
@@ -466,17 +468,16 @@ function showMenu(){
 
 function makeGame(){
 	game.id = Math.floor(Math.random() * 999999).toString();
-/*
+	/*
 	milkcocoa.dataStore("games").push({
 		id: game.id,
 		dt: new Date()
 	});
-*/
-	datastore = milkcocoa.dataStore(game.id);
-	datastore.on("send", receiveStatus);
-
+	↓ */
+	milkcocoa.dataStore("games").off("send");
 	milkcocoa.dataStore("games").on("send", function(data){
-		if (data.value.role == role.player) {
+		if (data.value.role == role.player
+		    && data.value.id != game.id) {
 			milkcocoa.dataStore("games").send({
 				role: role.master,
 				id: game.id,
@@ -496,8 +497,15 @@ function makeGame(){
 function showStart(){
 	$(".page").hide();
 	$("#page_start").show();
-	$("#label_gameid").text(game.id);
 	self.stage = stage.start;
+
+	$("#label_gameid").text(game.id);
+}
+
+function startGame(){
+	datastore = milkcocoa.dataStore(game.id);
+	datastore.on("send", receiveStatus);
+	sendStatus();
 }
 
 function showJoin(){
@@ -505,7 +513,8 @@ function showJoin(){
 	$("#page_join").show();
 	self.stage = stage.join;
 	
-/*
+	$("#list_gameid").empty();
+	/*
 	milkcocoa.dataStore("games").stream().size(10).sort("asc").next(function(err, data){
 		var tm = new Date();
 		data.forEach(function(datum){
@@ -514,20 +523,40 @@ function showJoin(){
 			$("<li />").text(datum.value.id).appendTo($("#list_gameid"));
 		});
 	});
-*/
+	↓ */
 	milkcocoa.dataStore("games").on("send", function(data){
 		if (data.value.role == role.master) {
-			console.log("data:" + data.value.id);
-			$("<input type='radio' name='gameid' />")
-			    .val(data.value.id)
-				.add($("<span />").text(data.value.id))
-				.prop("checked", true)
+			var lis = $("input[name='gameid']");
+			var ids = [];
+			lis.each(function(){
+				ids.push($(this).val());
+			});
+			if ($.inArray(data.value.id, ids) >= 0){
+				return;
+			}
+			var $input = $("<input type='radio' name='gameid' />")
+				.val(data.value.id)
+				.add($("<span />").text(data.value.id));
+			if (lis.length == 0){
+				$input.prop("checked", true);
+			}
+			$("<li>").add($input)
 				.appendTo($("#list_gameid"));
 		}
 	});
 	milkcocoa.dataStore("games").send({
 		role: role.player,
 		stage: stage.join,
+		id: game.id
+	});
+	
+	$("#page_join").styleListener({
+		styles: ['display'],
+		changed: function(style, newValue, oldValue, element) {
+			if (style == 'display' && newValue == 'none') {
+				milkcocoa.dataStore("games").off("send");
+			}
+		}
 	});
 }
 
@@ -535,21 +564,17 @@ function joinGame(){
 	datastore = milkcocoa.dataStore(game.id);
 	datastore.on("send", receiveStatus);
 	sendStatus();
+	/*
 	setTimeout("checkJoin()", 1000);
+	↓ */
+	showHajime();
 }
 
 function checkJoin(){
 	if (self.stage == stage.join) {
 		alert("ゲームに参加できませんでした。入力した ID を確認して下さい。あるいは通信環境を確認して下さい。");
+		return;
 	}
-	else {
-		startGame();
-	}
-}
-
-function startGame(){
-	$(".page").hide();
-	$("#page_game").show();
 	showHajime();
 }
 
@@ -577,18 +602,19 @@ $(document).ready(function(){
 		game.mode = mode.group;
 		self.role = role.player;
 		makeGame();
-		showStart();
+		showJoin();
 	});
 	
 	$("#button_as_master").click(function(){
 		game.mode = mode.group;
 		self.role = role.master;
 		makeGame();
+		startGame();
 		showStart();
 	});
 	
 	$("#button_start_game").click(function(){
-		startGame();
+		showHajime();
 	});
 
 	$("#button_as_player").click(function(){
@@ -599,10 +625,10 @@ $(document).ready(function(){
 	});	
 	
 	$("#button_join_game").click(function(){
-/*
+		/*
 		game.id = $("#input_gameid").text();
-*/
-		game.id = $('input[name=gameid]:checked').val();
+		↓ */
+		game.id = $("input[name='gameid']:checked").val();
 		joinGame();
 	});
 	

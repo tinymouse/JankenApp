@@ -48,10 +48,10 @@
 	</div>
 	
 	<div class="page" id="page_join">
-		<div>Game ID を入力して下さい</div>
+		<div>Game ID を選択して下さい</div>
 		<p></p>
-		<div id="list_gameid">
-		</div>
+		<ul id="list_gameid" />
+		</ul>
 <!--
 		<div id="input_gameid"></div>
 		<table id="tenkeypad">
@@ -83,7 +83,7 @@
 		</table>
 -->
 		<p></p>
-		<div class="button" id="button_join_game">[ゲームを始める]</div>
+		<div class="button" id="button_join_game">[ゲームに参加する]</div>
 	</div>
 	
 	<div class="page" id="page_hajime">
@@ -105,6 +105,7 @@
     <script src="cordova.js"></script>          <!-- "Phantom" cordova.js required for projects that use plugins -->
   
   	<script src="lib/jquery.js"></script>
+	<script src="lib/stylelistener.jquery.js"></script>
     <script src="https://cdn.mlkcca.com/v2.0.0/milkcocoa.js"></script>
 
     <script src="js/app.js"></script>           <!-- for your event code, see README and file comments for details -->
