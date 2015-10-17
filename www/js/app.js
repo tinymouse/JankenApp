@@ -93,7 +93,7 @@ var players = {
 	num: 0,
 	hands: [],
 	kachi: 0, make: 0, aiko: 0
-}
+};
 
 var game = {
 	mode: mode.single,
@@ -331,7 +331,7 @@ function showHantei(){
 		$("#label_mess").text("負け！");
 	}
 	else if (game.hantei == hantei.aiko) {
-		$("#label_mess").text("あいこ！")
+		$("#label_mess").text("あいこ！");
 	}
 
 	if (game.hantei == hantei.kachi) {
@@ -354,8 +354,13 @@ function showKekka(){
 	$("#label_mess").text("勝ち：" + players.kachi + "/負け：" + players.make + "/あいこ：" + players.aiko);
 }
 
+/*
 var milkcocoa = new MilkCocoa("flagie73jdt7.mlkcca.com");
+↓ */
+var socket = io.connect("http://192.168.179.4:3000");
+/*
 var datastore = milkcocoa.dataStore(game.id);
+*/
 
 function sendStatus(){
 	var text = "role:" + self.role + "/stage:" + self.stage + "/hand:" + self.hand + "/hantei:" + game.hantei;
@@ -366,46 +371,49 @@ function sendStatus(){
 		hantei: game.hantei,
 		text: text
 	};
+	/*
 	datastore.send(data, function(){
 	},function(){
 	});
+	↓ */
+	socket.json.emit('status', data);
 }
 
 function receiveStatus(data){
-	console.log("data.value.text" + data.value.text);
+	console.log("data.text:" + data.text);
 	
-	if (data.value.role == role.master) {
-		if (data.value.stage == stage.gu) {
+	if (data.role == role.master) {
+		if (data.stage == stage.gu) {
 			master.exist = true;
 		}
-		master.stage = data.value.stage;
-		master.hand = data.value.hand;
+		master.stage = data.stage;
+		master.hand = data.hand;
 	}
-	else if (data.value.role == role.player) {
-		if (data.value.stage == stage.gu) {
+	else if (data.role == role.player) {
+		if (data.stage == stage.gu) {
 			players.num++;
 		}
-		else if (data.value.stage == stage.pon) {
-			players.hands.push(data.value.hand);
+		else if (data.stage == stage.pon) {
+			players.hands.push(data.hand);
 		}
-		else if (data.value.stage == stage.hantei) {
-			if (data.value.hantei == hantei.kachi) {
+		else if (data.stage == stage.hantei) {
+			if (data.hantei == hantei.kachi) {
 				players.kachi++;
 			}
-			else if (data.value.hantei == hantei.make) {
+			else if (data.hantei == hantei.make) {
 				players.make++;
 			}
 			else {
 				players.aiko++;
 			}
 		}
-		else if (data.value.stage == stage.join) {
+		else if (data.stage == stage.join) {
 			sendStatus();
 		}
 	}
 /*
 	if (self.stage == stage.join &&
-	    data.value.stage != stage.join) {
+	    data.stage != stage.join) {
 		self.stage = stage.start;
 	}
 */
@@ -428,7 +436,7 @@ function receiveStatus(data){
 	}
 	else if (players.num > 2) {    // グループ
 		if (self.stage == stage.pon &&
-			data.value.stage == stage.pon &&
+			data.stage == stage.pon &&
 			players.hands.length >= players.num) {
 
 			judgeByPlayers();
@@ -439,7 +447,7 @@ function receiveStatus(data){
 	}
 	else {    // 一対一
 		if (self.stage == stage.pon &&
-			data.value.stage == stage.pon &&
+			data.stage == stage.pon &&
 			players.hands.length >= players.num) {
 
 			judgeByOpponent();
@@ -474,10 +482,11 @@ function makeGame(){
 		dt: new Date()
 	});
 	↓ */
+	/*
 	milkcocoa.dataStore("games").off("send");
 	milkcocoa.dataStore("games").on("send", function(data){
-		if (data.value.role == role.player
-		    && data.value.id != game.id) {
+		if (data.role == role.player
+		    && data.id != game.id) {
 			milkcocoa.dataStore("games").send({
 				role: role.master,
 				id: game.id,
@@ -492,6 +501,22 @@ function makeGame(){
 		stage: stage.join,
 		id: game.id
 	});
+	↓ */
+	socket.on('gameid', function(data){
+		if (data.role == role.player 
+			&& data.id != game.id) {
+			socket.json.emit('gameid', {
+				role: role.master,
+				id: game.id,
+				dt: new Date()
+			});
+		}
+	});
+	socket.json.emit('gameid', {
+		role: role.master,
+		id: game.id,
+		stage: stage.join,
+	});
 }
 
 function showStart(){
@@ -503,8 +528,17 @@ function showStart(){
 }
 
 function startGame(){
+	/*
 	datastore = milkcocoa.dataStore(game.id);
+	↓ */
+	socket.json.emit('join', {
+		room: game.id
+	});
+	/*
 	datastore.on("send", receiveStatus);
+	↓ */
+	socket.on('status', receiveStatus);
+
 	sendStatus();
 }
 
@@ -524,19 +558,20 @@ function showJoin(){
 		});
 	});
 	↓ */
+	/*
 	milkcocoa.dataStore("games").on("send", function(data){
-		if (data.value.role == role.master) {
+		if (data.role == role.master) {
 			var lis = $("input[name='gameid']");
 			var ids = [];
 			lis.each(function(){
 				ids.push($(this).val());
 			});
-			if ($.inArray(data.value.id, ids) >= 0){
+			if ($.inArray(data.id, ids) >= 0){
 				return;
 			}
 			var $input = $("<input type='radio' name='gameid' />")
-				.val(data.value.id)
-				.add($("<span />").text(data.value.id));
+				.val(data.id)
+				.add($("<span />").text(data.id));
 			if (lis.length == 0){
 				$input.prop("checked", true);
 			}
@@ -549,21 +584,78 @@ function showJoin(){
 		stage: stage.join,
 		id: game.id
 	});
+	↓ */
+	socket.on('gameid', function(data){
+		if (data.role == role.master) {
+			var lis = $("input[name='gameid']");
+			var ids = [];
+			lis.each(function(){
+				ids.push($(this).val());
+			});
+			if ($.inArray(data.id, ids) >= 0){
+				return;
+			}
+			var $input = $("<input type='radio' name='gameid' />")
+				.val(data.id)
+				.add($("<span />").text(data.id));
+			if (lis.length == 0){
+				$input.prop("checked", true);
+			}
+			$("<li>").add($input)
+				.appendTo($("#list_gameid"));
+		}
+		if (data.role == role.master) {
+			var lis = $("input[name='gameid']");
+			var ids = [];
+			lis.each(function(){
+				ids.push($(this).val());
+			});
+			if ($.inArray(data.id, ids) >= 0){
+				return;
+			}
+			var $input = $("<input type='radio' name='gameid' />")
+				.val(data.id)
+				.add($("<span />").text(data.id));
+			if (lis.length == 0){
+				$input.prop("checked", true);
+			}
+			$("<li>").add($input)
+				.appendTo($("#list_gameid"));
+		}
+	});
+	socket.json.emit('gameid', {
+		role: role.player,
+		stage: stage.join,
+		id: game.id
+	});
 	
 	$("#page_join").styleListener({
 		styles: ['display'],
 		changed: function(style, newValue, oldValue, element) {
 			if (style == 'display' && newValue == 'none') {
+				/*
 				milkcocoa.dataStore("games").off("send");
+				↓ */
+				socket.removeListener('gameid');
 			}
 		}
 	});
 }
 
 function joinGame(){
+	/*
 	datastore = milkcocoa.dataStore(game.id);
+	↓ */
+	socket.json.emit('join', {
+		room: game.id
+	});
+	/*
 	datastore.on("send", receiveStatus);
+	↓ */
+	socket.on('status', receiveStatus);
+	
 	sendStatus();
+
 	/*
 	setTimeout("checkJoin()", 1000);
 	↓ */
@@ -595,7 +687,7 @@ $(document).ready(function(){
 	$("#button_standalone").click(function(){
 		game.mode = mode.single;
 		self.role = role.player;
-		startGame();
+		showHajime();
 	});
 	
 	$("#button_no_master").click(function(){
