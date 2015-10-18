@@ -357,7 +357,10 @@ function showKekka(){
 /*
 var milkcocoa = new MilkCocoa("flagie73jdt7.mlkcca.com");
 ↓ */
+/*
 var socket = io.connect("http://192.168.179.4:3000");
+*/
+var socket = io.connect("https://janken-tinymouse.herokuapp.com");
 /*
 var datastore = milkcocoa.dataStore(game.id);
 */
@@ -381,7 +384,7 @@ function sendStatus(){
 
 function receiveStatus(data){
 	console.log("data.text:" + data.text);
-	
+
 	if (data.role == role.master) {
 		if (data.stage == stage.gu) {
 			master.exist = true;
@@ -417,7 +420,6 @@ function receiveStatus(data){
 		self.stage = stage.start;
 	}
 */
-
 	if (master.exist) {    // 親あり
 		if (self.role == role.player &&
 			self.stage == stage.pon &&
@@ -468,6 +470,10 @@ function receiveStatus(data){
 	}
 }
 
+socket.on('status', function(data){
+	receiveStatus(data);
+});
+
 function showMenu(){
 	$(".page").hide();
 	$("#page_menu").show();
@@ -502,22 +508,28 @@ function makeGame(){
 		id: game.id
 	});
 	↓ */
-	socket.on('gameid', function(data){
-		if (data.role == role.player 
-			&& data.id != game.id) {
-			socket.json.emit('gameid', {
-				role: role.master,
-				id: game.id,
-				dt: new Date()
-			});
-		}
-	});
 	socket.json.emit('gameid', {
 		role: role.master,
 		id: game.id,
 		stage: stage.join,
+		dt: new Date(),
+		flag: 1
 	});
 }
+
+/* ↓ */
+socket.on('gameid', function(data){
+	if (data.role == role.player 
+		&& data.id != game.id) {
+		socket.json.emit('gameid', {
+			role: role.master,
+			id: game.id,
+			stage: stage.join,
+			dt: new Date(),
+			flag: 2
+		});
+	}
+});
 
 function showStart(){
 	$(".page").hide();
@@ -537,7 +549,6 @@ function startGame(){
 	/*
 	datastore.on("send", receiveStatus);
 	↓ */
-	socket.on('status', receiveStatus);
 
 	sendStatus();
 }
@@ -553,7 +564,6 @@ function showJoin(){
 		var tm = new Date();
 		data.forEach(function(datum){
 			if (tm - datum.value.dt >= 10000) return;
-			console.log("datum:" + datum.value.id);
 			$("<li />").text(datum.value.id).appendTo($("#list_gameid"));
 		});
 	});
@@ -585,62 +595,45 @@ function showJoin(){
 		id: game.id
 	});
 	↓ */
-	socket.on('gameid', function(data){
-		if (data.role == role.master) {
-			var lis = $("input[name='gameid']");
-			var ids = [];
-			lis.each(function(){
-				ids.push($(this).val());
-			});
-			if ($.inArray(data.id, ids) >= 0){
-				return;
-			}
-			var $input = $("<input type='radio' name='gameid' />")
-				.val(data.id)
-				.add($("<span />").text(data.id));
-			if (lis.length == 0){
-				$input.prop("checked", true);
-			}
-			$("<li>").add($input)
-				.appendTo($("#list_gameid"));
-		}
-		if (data.role == role.master) {
-			var lis = $("input[name='gameid']");
-			var ids = [];
-			lis.each(function(){
-				ids.push($(this).val());
-			});
-			if ($.inArray(data.id, ids) >= 0){
-				return;
-			}
-			var $input = $("<input type='radio' name='gameid' />")
-				.val(data.id)
-				.add($("<span />").text(data.id));
-			if (lis.length == 0){
-				$input.prop("checked", true);
-			}
-			$("<li>").add($input)
-				.appendTo($("#list_gameid"));
-		}
-	});
 	socket.json.emit('gameid', {
 		role: role.player,
 		stage: stage.join,
 		id: game.id
 	});
 	
+	/*
 	$("#page_join").styleListener({
 		styles: ['display'],
 		changed: function(style, newValue, oldValue, element) {
 			if (style == 'display' && newValue == 'none') {
-				/*
 				milkcocoa.dataStore("games").off("send");
-				↓ */
-				socket.removeListener('gameid');
 			}
 		}
 	});
+	*/
 }
+
+/* ↓ */
+socket.on('gameid', function(data){
+	if (data.role == role.master) {
+		var lis = $("input[name='gameid']");
+		var ids = [];
+		lis.each(function(){
+			ids.push($(this).val());
+		});
+		if ($.inArray(data.id, ids) >= 0){
+			return;
+		}
+		var $input = $("<input type='radio' name='gameid' />")
+			.val(data.id)
+			.add($("<span />").text(data.id));
+		if (lis.length == 0){
+			$input.prop("checked", true);
+		}
+		$("<li />").append($input)
+			.appendTo($("#list_gameid"));
+	}
+});
 
 function joinGame(){
 	/*
@@ -652,7 +645,6 @@ function joinGame(){
 	/*
 	datastore.on("send", receiveStatus);
 	↓ */
-	socket.on('status', receiveStatus);
 	
 	sendStatus();
 

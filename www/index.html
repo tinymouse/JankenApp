@@ -30,60 +30,60 @@
 
 
 <body>
-	<div class="page" id="page_menu">
-		<div id="block_menu">
-			<div class="button" id="button_standalone">[通信なしでゲームを始める]</div>
-			<div class="button" id="button_no_master">[親なしでゲームを始める]</div>
-			<div class="button" id="button_as_master">[親になってゲームを始める]</div>
-			<div class="button" id="button_as_player">[ゲームに参加する]</div>
+	<div class="page wrap_menu" id="page_menu">
+		<div class="block_menu">
+			<div class="button button_menu" id="button_standalone">[通信なしでゲームを始める]</div>
+			<div class="button button_menu" id="button_no_master">[親なしでゲームを始める]</div>
+			<div class="button button_menu" id="button_as_master">[親になってゲームを始める]</div>
+			<div class="button button_menu" id="button_as_player">[ゲームに参加する]</div>
 		</div>
 	</div>
 	
-	<div class="page" id="page_start">
-		<div>今回の Game ID です</div>
-		<p></p>
-		<div id="label_gameid"></div>
-		<p></p>
-		<div class="button" id="button_start_game">[ゲームを始める]</div>
+	<div class="page wrap_list" id="page_start">
+		<div class="block_list">
+			<div>今回の Game ID です</div>
+			<div id="label_gameid"></div>
+			<div class="button" id="button_start_game">[ゲームを始める]</div>
+		</div>
 	</div>
 	
-	<div class="page" id="page_join">
-		<div>Game ID を選択して下さい</div>
-		<p></p>
-		<ul id="list_gameid" />
-		</ul>
+	<div class="page wrap_list" id="page_join">
+		<div class="block_list">
+			<div>Game ID を選択して下さい</div>
 <!--
-		<div id="input_gameid"></div>
-		<table id="tenkeypad">
-			<tr>
-				<td></td>
-				<td></td>
-				<td value="bs" class="key">BS</td>
-			</tr>
-			<tr>
-				<td value="7" class="key">7</td>
-				<td value="8" class="key">8</td>
-				<td value="9" class="key">9</td>
-			</tr>
-			<tr>
-				<td value="4" class="key">4</td>
-				<td value="5" class="key">5</td>
-				<td value="6" class="key">6</td>
-			</tr>
-			<tr>
-				<td value="1" class="key">1</td>
-				<td value="2" class="key">2</td>
-				<td value="3" class="key">3</td>
-			</tr>
-			<tr>
-				<td value="0" class="key">0</td>
-				<td></td>
-				<td></td>
-			</tr>
-		</table>
+			<div id="input_gameid"></div>
+			<table id="tenkeypad">
+				<tr>
+					<td></td>
+					<td></td>
+					<td value="bs" class="key">BS</td>
+				</tr>
+				<tr>
+					<td value="7" class="key">7</td>
+					<td value="8" class="key">8</td>
+					<td value="9" class="key">9</td>
+				</tr>
+				<tr>
+					<td value="4" class="key">4</td>
+					<td value="5" class="key">5</td>
+					<td value="6" class="key">6</td>
+				</tr>
+				<tr>
+					<td value="1" class="key">1</td>
+					<td value="2" class="key">2</td>
+					<td value="3" class="key">3</td>
+				</tr>
+				<tr>
+					<td value="0" class="key">0</td>
+					<td></td>
+					<td></td>
+				</tr>
+			</table>
 -->
-		<p></p>
-		<div class="button" id="button_join_game">[ゲームに参加する]</div>
+			<ul id="list_gameid" />
+			</ul>
+			<div class="button" id="button_join_game">[ゲームに参加する]</div>
+		</div>
 	</div>
 	
 	<div class="page" id="page_hajime">

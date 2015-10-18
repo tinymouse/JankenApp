@@ -62,37 +62,84 @@ body,
 }
 
 .page {
-	position: relative;
-	background-repeat: no-repeat;
-	background-position: center;
-	background-size: contain;
-}
 
-.fill {
-	position: absolute;
-	left: 0; top: 0;
-	width: 100%; height: 100%;
-    background-color: transparent;
-	background-repeat: no-repeat;
-	background-position: center;
-	background-size: contain;
 }
 
 #page_menu {
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: contain;
 	background-image: url("../images/Janken.png");
 }
 
-#block_menu {
-	
+.wrap_menu {
+	display: table;
+	width: 100%;
+}
+
+.block_menu {
+	display: table-cell;
+	vertical-align: middle;
+	width: 100%;
+	padding: 10px;
 }
 
 .button {
-	margin: 10px 10px;
 	padding: 15px;
 	background-color: azure;
 	box-shadow: 5px 5px 10px;
 }
 
+.button_menu {
+	margin: 20px 0;
+}
+
+.wrap_list {
+	display: table;
+	width: 100%;
+}
+
+.block_list {
+	display: table-cell;
+	width: 100%;
+	padding: 10px;
+}
+
+#label_gameid {
+	margin: 20px 0;
+	padding: 10px;
+	border: 4px;
+	border-color: white;
+	background-color: azure;
+}
+
+#list_gameid {
+	margin: 20px 0;
+	list-style: none;
+	padding: 0;
+}
+
+#list_gameid li {
+	margin: 2px;
+	padding: 15px;
+	border: 4px;
+	border-color: white;
+	background-color: azure;
+}
+
+.page {
+	position: relative;
+}
+
+.page .fill {
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: contain;
+	position: absolute;
+	left: 0; top: 0; width: 100%; height: 100%;
+    background-color: transparent;
+}
+	
 #tenkeypad {
 	width: 100%;
 	padding: 10px;
